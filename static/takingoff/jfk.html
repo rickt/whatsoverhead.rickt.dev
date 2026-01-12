@@ -165,6 +165,7 @@
                 lon: lon,
                 dist: dist,
                 max_alt: 8500,
+                movement: "receding",
                 format: "text"
             })
             const url = `https://api.whatsoverhead.rickt.dev/nearest_plane?${params.toString()}`
@@ -202,7 +203,7 @@
         }
         document.addEventListener('DOMContentLoaded', () => {
             showLoading()
-            fetchNearestPlane(40.61787683545051, -73.79041618625587, 1)
+            fetchNearestPlane(40.61787683545051, -73.79041618625587, 3.5)
         })
     </script>
 </body>

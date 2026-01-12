@@ -52,6 +52,7 @@ uses the free [adsb.fi](https://adsb.fi) [ADS-B API](https://github.com/adsbfi/o
           | lon    | float  | None    | Longitude of the location (required). |
           | dist   | float  | 5.0     | Search radius in kilometers.          |
           | max_alt| float  | None    | Max altitude in feet (optional).      |
+          | movement| string| None    | Filter: 'receding' or 'approaching'.  |
           | format | string | json    | Response format (json or text).       |
        ```
       * responses:

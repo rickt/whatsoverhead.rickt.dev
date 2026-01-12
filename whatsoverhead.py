@@ -157,7 +157,7 @@ def calculate_relative_speed(gs: float, aircraft_track: float, user_to_aircraft_
     relative_speed = gs * cos(radians(angle_diff))
     return relative_speed  # positive: approaching, negative: moving away
 
-def find_nearest_aircraft(aircraft_list: list, center_lat: float, center_lon: float, max_alt: float = None):
+def find_nearest_aircraft(aircraft_list: list, center_lat: float, center_lon: float, max_alt: float = None, movement: str = None):
     # find the nearest aircraft that is airborne with valid speed
     if not aircraft_list:
         return None, None
@@ -170,6 +170,7 @@ def find_nearest_aircraft(aircraft_list: list, center_lat: float, center_lon: fl
         alt_geom = aircraft.get('alt_geom')
         alt_baro = aircraft.get('alt_baro')
         gs = aircraft.get('gs')
+        track = aircraft.get('track')
 
         # exclude aircraft on the ground
         if isinstance(alt_baro, str) and alt_baro.lower() == "ground":
@@ -205,6 +206,20 @@ def find_nearest_aircraft(aircraft_list: list, center_lat: float, center_lon: fl
         aircraft_lon = aircraft.get('lon')
         if aircraft_lat is None or aircraft_lon is None:
             continue
+
+        # filter by movement (receding/approaching)
+        if movement:
+            if track is None:
+                continue
+            
+            # calculate bearing and relative speed for filtering
+            bearing = calculate_bearing(center_lat, center_lon, aircraft_lat, aircraft_lon)
+            rel_speed = calculate_relative_speed(gs, track, bearing)
+            
+            if movement.lower() == "receding" and rel_speed >= 0:
+                continue # skip if approaching or stationary
+            elif movement.lower() == "approaching" and rel_speed <= 0:
+                continue # skip if receding or stationary
 
         # calculate the distance
         distance_km = haversine_distance(center_lat, center_lon, aircraft_lat, aircraft_lon)
@@ -286,6 +301,7 @@ def nearest_plane(
     lon: float,
     dist: Optional[float] = 5.0,
     max_alt: Optional[float] = None,
+    movement: Optional[str] = None,
     format: Optional[str] = "text"
 ):
 
@@ -313,7 +329,7 @@ def nearest_plane(
             message=message
         )
 
-    nearest_aircraft, distance_km = find_nearest_aircraft(aircraft_list, lat, lon, max_alt)
+    nearest_aircraft, distance_km = find_nearest_aircraft(aircraft_list, lat, lon, max_alt, movement)
     if not nearest_aircraft:
         message = "No aircraft found within the specified radius."
         if format.lower() == "text":
