@@ -1,7 +1,5 @@
 # whatsoverhead.py
 
-import logging
-from google.cloud.logging_v2.handlers import CloudLoggingHandler
 from fastapi import FastAPI, HTTPException, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -13,6 +11,9 @@ from math import radians, cos, sin, asin, sqrt, atan2, degrees
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+
+import logging
+from google.cloud.logging_v2.handlers import CloudLoggingHandler
 from google.cloud import logging as gcp_logging
 
 #
@@ -156,7 +157,7 @@ def calculate_relative_speed(gs: float, aircraft_track: float, user_to_aircraft_
     relative_speed = gs * cos(radians(angle_diff))
     return relative_speed  # positive: approaching, negative: moving away
 
-def find_nearest_aircraft(aircraft_list: list, center_lat: float, center_lon: float):
+def find_nearest_aircraft(aircraft_list: list, center_lat: float, center_lon: float, max_alt: float = None):
     # find the nearest aircraft that is airborne with valid speed
     if not aircraft_list:
         return None, None
@@ -191,6 +192,11 @@ def find_nearest_aircraft(aircraft_list: list, center_lat: float, center_lon: fl
         # skip if altitude < 100ft
         if altitude <= 100:
             continue
+
+        # skip if altitude > max_alt (if provided)
+        if max_alt is not None and altitude > max_alt:
+            continue
+
         if gs is None or gs == 0:
             continue
 
@@ -279,6 +285,7 @@ def nearest_plane(
     lat: float,
     lon: float,
     dist: Optional[float] = 5.0,
+    max_alt: Optional[float] = None,
     format: Optional[str] = "text"
 ):
 
@@ -306,7 +313,7 @@ def nearest_plane(
             message=message
         )
 
-    nearest_aircraft, distance_km = find_nearest_aircraft(aircraft_list, lat, lon)
+    nearest_aircraft, distance_km = find_nearest_aircraft(aircraft_list, lat, lon, max_alt)
     if not nearest_aircraft:
         message = "No aircraft found within the specified radius."
         if format.lower() == "text":

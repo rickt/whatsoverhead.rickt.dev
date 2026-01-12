@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-48ZKP0XD0B"></script>
+	<script>
+  	 	window.dataLayer = window.dataLayer || [];
+  	 	function gtag(){dataLayer.push(arguments);}
+  	 	gtag('js', new Date());
+  	 	gtag('config', 'G-48ZKP0XD0B');
+	</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What's Taking Off at LAX?</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="https://whatsoverhead.rickt.dev/static/takingoff.ico" type="image/x-icon">
+    <style>
+        :root {
+            --background-color: #ffffff;
+            --text-color: #000000;
+            --link-color: #0d6efd;
+            --chatbox-background: #f9f9f9;
+            --chatbox-border: #ccc;
+            --button-background: #007BFF;
+            --button-border: #007BFF;
+            --button-hover-background: #0056b3;
+            --button-color: #ffffff;
+        }
+        [data-theme="dark"] {
+            --background-color: #121212;
+            --text-color: #ffffff;
+            --link-color: #81D4FA;
+            --chatbox-background: #1e1e1e;
+            --chatbox-border: #333;
+            --button-background: #1E90FF;
+            --button-border: #1C86EE;
+            --button-hover-background: #1C86EE;
+            --button-color: #ffffff;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        a {
+            color: var(--link-color);
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        [data-theme="dark"] .footer {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        [data-theme="dark"] .footer a.text-body {
+            color: var(--link-color) !important;
+        }
+        #themeToggle {
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+        #findPlaneBtn {
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: var(--button-background);
+            color: var(--button-color);
+            border: 1px solid var(--button-border);
+            border-radius: 5px;
+            max-width: 250px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        #findPlaneBtn:hover {
+            background-color: var(--button-hover-background);
+            border-color: var(--button-hover-background);
+        }
+        #result {
+            background-color: var(--chatbox-background);
+            color: var(--text-color);
+            border: 1px solid var(--chatbox-border);
+            width: 100%;
+            max-width: 700px;
+            height: auto;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-y: auto;
+            margin: 0 auto;
+            text-align: left;
+        }
+        .link-centered {
+            text-align: center;
+            display: block;
+            margin-top: 15px;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+    <link rel="icon" href="/plane.ico" type="image/x-icon">
+</head>
+<body class="d-flex flex-column min-vh-100" data-theme="light">
+    <div class="container flex-fill">
+        <div class="text-center my-3">
+            <a href=""><img src="https://whatsoverhead.rickt.dev/static/takingoff.png" class="img-fluid" alt="What's Taking Off at LAX?" style="max-height: 64px; max-width: 64px;"></a>
+            <p class="h3 fw-bold">What's Taking Off at LAX?</p>
+            <div>
+                <button id="themeToggle" class="btn btn-secondary mb-3">Toggle Dark Mode</button>
+            </div>
+            <div id="result" class="mt-4">
+                <div id="spinner" class="d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Requesting location...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="footer mt-auto py-3 text-center">
+        <div class="container">
+            <p class="mb-0">2025 by <a href="https://rickt.dev/" class="text-body">rickt</a></p>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        const body = document.body
+        const themeToggle = document.getElementById('themeToggle')
+        const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)")
+        body.setAttribute("data-theme", prefersDarkScheme.matches ? "dark" : "light")
+        prefersDarkScheme.addEventListener("change", (e) => {
+            body.setAttribute("data-theme", e.matches ? "dark" : "light")
+        })
+        themeToggle.addEventListener("click", () => {
+            const currentTheme = body.getAttribute("data-theme")
+            body.setAttribute("data-theme", currentTheme === "light" ? "dark" : "light")
+        })
+        const resultDiv = document.getElementById('result')
+        function displayMessage(message, isError = false) {
+            resultDiv.innerHTML = ''
+            const p = document.createElement('p')
+            p.textContent = message
+            p.className = isError ? 'error' : 'success'
+            resultDiv.appendChild(p)
+        }
+        function showLoading(message = 'Requesting location...') {
+            resultDiv.innerHTML = `
+                <div class="d-flex flex-column align-items-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">${message}</p>
+                </div>
+            `
+        }
+        function fetchNearestPlane(lat, lon, dist) {
+            const params = new URLSearchParams({
+                lat: lat,
+                lon: lon,
+                dist: dist,
+                max_alt: 8500,
+                format: "text"
+            })
+            const url = `https://api.whatsoverhead.rickt.dev/nearest_plane?${params.toString()}`
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(errText => {
+                            throw new Error(errText || 'unknown error occurred.')
+                        })
+                    }
+                    return response.text()
+                })
+                .then(data => {
+                    if (data) {
+                        displayMessage(data, false)
+                        const mapUrl = `https://globe.adsbexchange.com/?lat=${lat}&lon=${lon}&zoom=12.5`
+                        const link = document.createElement('a')
+                        link.href = mapUrl
+                        link.textContent = 'Click HERE for aircraft map above LAX.'
+                        link.target = '_blank'
+                        link.rel = 'noopener noreferrer'
+                        link.className = 'link-centered'
+                        resultDiv.appendChild(link)
+                    } else {
+                        displayMessage('No data received from the api.', true)
+                    }
+                })
+                .catch(error => {
+                    if (error.message) {
+                        displayMessage(error.message, true)
+                    } else {
+                        displayMessage('An unknown error occurred.', true)
+                    }
+                })
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            showLoading()
+            // fetchNearestPlane(33.93636884318631, -118.4100614813572, 1.5)
+            fetchNearestPlane(33.934500999308305, -118.42708027498098, 1.5)
+        })
+    </script>
+</body>
+</html>
