@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-48ZKP0XD0B"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-48ZKP0XD0B');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What's Taking Off?</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="https://whatsoverhead.rickt.dev/static/takingoff.ico" type="image/x-icon">
+
+    <style>
+        :root {
+            --background-color: #ffffff;
+            --text-color: #000000;
+            --link-color: #0d6efd;
+            --chatbox-background: #f9f9f9;
+            --chatbox-border: #ccc;
+            --button-background: #007BFF;
+            --button-border: #007BFF;
+            --button-hover-background: #0056b3;
+            --button-color: #ffffff;
+        }
+        [data-theme="dark"] {
+            --background-color: #121212;
+            --text-color: #ffffff;
+            --link-color: #81D4FA;
+            --chatbox-background: #1e1e1e;
+            --chatbox-border: #333;
+            --button-background: #1E90FF;
+            --button-border: #1C86EE;
+            --button-hover-background: #1C86EE;
+            --button-color: #ffffff;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        a { color: var(--link-color); }
+        a:hover { text-decoration: underline; }
+
+        .footer { background-color: rgba(0, 0, 0, 0.05); }
+        [data-theme="dark"] .footer { background-color: rgba(255, 255, 255, 0.1); }
+        [data-theme="dark"] .footer a.text-body { color: var(--link-color) !important; }
+
+        #themeToggle { font-size: 12px; padding: 5px 10px; }
+
+        .panel {
+            background-color: var(--chatbox-background);
+            color: var(--text-color);
+            border: 1px solid var(--chatbox-border);
+            width: 100%;
+            max-width: 800px;
+            padding: 18px;
+            border-radius: 8px;
+            margin: 12px auto;
+            text-align: left;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .panel-title {
+            font-weight: 700;
+            margin: 0;
+            font-size: 1.05rem;
+        }
+
+        .panel-subtitle {
+            opacity: 0.85;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .error { color: red; }
+        .success { color: green; }
+
+        .link-centered {
+            text-align: center;
+            display: block;
+            margin-top: 12px;
+        }
+
+        .spinner-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
+        }
+    </style>
+
+    <link rel="icon" href="/plane.ico" type="image/x-icon">
+</head>
+
+<body class="d-flex flex-column min-vh-100" data-theme="light">
+    <div class="container flex-fill">
+        <div class="text-center my-3">
+            <a href="/"><img
+                src="https://whatsoverhead.rickt.dev/static/takingoff.png"
+                class="img-fluid"
+                alt="What's Taking Off?"
+                style="max-height: 64px; max-width: 64px;"></a>
+
+            <p id="headline" class="h3 fw-bold">What's Taking Off?</p>
+
+            <div>
+                <button id="themeToggle" class="btn btn-secondary mb-3">Toggle Dark Mode</button>
+            </div>
+
+            <!-- We will render one panel per view here -->
+            <div id="panels"></div>
+
+            <div id="hint" class="mt-3" style="opacity:0.85;"></div>
+        </div>
+    </div>
+
+    <footer class="footer mt-auto py-3 text-center">
+        <div class="container">
+            <p class="mb-0">2025 by <a href="https://rickt.dev/" class="text-body">rickt</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        // ----- Theme handling -----
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+        const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+        body.setAttribute("data-theme", prefersDarkScheme.matches ? "dark" : "light");
+        prefersDarkScheme.addEventListener("change", (e) => {
+            body.setAttribute("data-theme", e.matches ? "dark" : "light");
+        });
+        themeToggle.addEventListener("click", () => {
+            const currentTheme = body.getAttribute("data-theme");
+            body.setAttribute("data-theme", currentTheme === "light" ? "dark" : "light");
+        });
+
+        const headlineEl = document.getElementById('headline');
+        const panelsEl = document.getElementById('panels');
+        const hintEl = document.getElementById('hint');
+
+        function getRoute() {
+            const params = new URLSearchParams(window.location.search);
+            let code = (params.get('code') || '').trim();
+            let view = (params.get('view') || '').trim();
+            if (view === 'undefined' || view === 'null') view = '';
+
+            if (!code) {
+                const parts = window.location.pathname.split('/').filter(Boolean);
+                code = (parts[0] || '').trim();
+                view = (parts[1] || '').trim();
+            }
+
+            return { code: code.toLowerCase(), view: view.toLowerCase() };
+        }
+
+        async function loadAirports() {
+            const resp = await fetch('/airports.json', { cache: 'no-cache' });
+            if (!resp.ok) throw new Error('Failed to load airports.json');
+            return await resp.json();
+        }
+
+        function setTitleAndHeader(titleText) {
+            document.title = titleText;
+            headlineEl.textContent = titleText;
+        }
+
+        function createPanel(title, subtitle) {
+            const panel = document.createElement('div');
+            panel.className = 'panel';
+
+            const header = document.createElement('div');
+            header.className = 'panel-header';
+
+            const left = document.createElement('div');
+            const h = document.createElement('p');
+            h.className = 'panel-title';
+            h.textContent = title;
+
+            const s = document.createElement('p');
+            s.className = 'panel-subtitle';
+            s.textContent = subtitle || '';
+
+            left.appendChild(h);
+            if (subtitle) left.appendChild(s);
+
+            header.appendChild(left);
+            panel.appendChild(header);
+
+            const content = document.createElement('div');
+            panel.appendChild(content);
+
+            return { panel, content };
+        }
+
+        function showPanelLoading(contentEl, message) {
+            contentEl.innerHTML = `
+                <div class="spinner-row">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">${message}</p>
+                </div>
+            `;
+        }
+
+        function showPanelMessage(contentEl, message, isError) {
+            contentEl.innerHTML = '';
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.className = isError ? 'error' : 'success';
+            contentEl.appendChild(p);
+        }
+
+        function addMapLink(contentEl, lat, lon, zoom, airportCode, viewLabel) {
+            const mapUrl = `https://globe.adsbexchange.com/?lat=${lat}&lon=${lon}&zoom=${zoom}`;
+            const link = document.createElement('a');
+            link.href = mapUrl;
+            link.textContent = viewLabel
+                ? `Click HERE for aircraft map above ${airportCode} (${viewLabel}).`
+                : `Click HERE for aircraft map above ${airportCode}.`;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.className = 'link-centered';
+            contentEl.appendChild(link);
+        }
+
+        function fetchNearestPlaneIntoPanel(viewCfg, airportCode, contentEl) {
+            const lat = viewCfg.lat;
+            const lon = viewCfg.lon;
+            const dist = viewCfg.dist;
+
+            const maxAlt = (typeof viewCfg.max_alt === 'number') ? viewCfg.max_alt : 8500;
+            const movement = viewCfg.movement || "receding";
+            const mapZoom = (typeof viewCfg.mapZoom === 'number') ? viewCfg.mapZoom : 12.5;
+
+            const params = new URLSearchParams({
+                lat, lon, dist,
+                max_alt: maxAlt,
+                movement: movement,
+                format: "text"
+            });
+
+            const url = `https://api.whatsoverhead.rickt.dev/nearest_plane?${params.toString()}`;
+
+            fetch(url)
+                .then(r => {
+                    if (!r.ok) {
+                        return r.text().then(t => { throw new Error(t || 'unknown error occurred.'); });
+                    }
+                    return r.text();
+                })
+                .then(data => {
+                    if (data) {
+                        showPanelMessage(contentEl, data, false);
+                        addMapLink(contentEl, lat, lon, mapZoom, airportCode, viewCfg.label || '');
+                    } else {
+                        showPanelMessage(contentEl, 'No data received from the api.', true);
+                    }
+                })
+                .catch(err => {
+                    showPanelMessage(contentEl, err?.message || 'An unknown error occurred.', true);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                panelsEl.innerHTML = '';
+
+                const airports = await loadAirports();
+                const { code, view } = getRoute();
+
+                if (!code) {
+                    setTitleAndHeader("What's Taking Off?");
+                    hintEl.textContent = 'Try: /airport.html?code=lax or /airport.html?code=jfk';
+                    return;
+                }
+
+                const airport = airports[code];
+                if (!airport) {
+                    setTitleAndHeader("What's Taking Off?");
+                    hintEl.textContent = `Unknown airport "${code}".`;
+                    return;
+                }
+
+                const airportCode = airport.code || code.toUpperCase();
+                const titleText = airport.title || `What's Taking Off at ${airportCode}?`;
+                setTitleAndHeader(titleText);
+
+                const viewsObj = airport.views || {};
+                const viewKeys = Object.keys(viewsObj);
+
+                if (viewKeys.length === 0) {
+                    const { panel, content } = createPanel(airportCode, '');
+                    panelsEl.appendChild(panel);
+                    showPanelMessage(content, 'No views configured for this airport in airports.json.', true);
+                    return;
+                }
+
+                // If a specific view was requested, show only that one.
+                if (view) {
+                    const selected = viewsObj[view];
+                    if (!selected) {
+                        const { panel, content } = createPanel(airportCode, '');
+                        panelsEl.appendChild(panel);
+                        showPanelMessage(content, `Unknown view "${view}" for ${airportCode}.`, true);
+                        hintEl.textContent = `Available views: ${viewKeys.join(', ')}`;
+                        return;
+                    }
+
+                    const label = selected.label || view.toUpperCase();
+                    const { panel, content } = createPanel(`${airportCode} — ${label}`, '');
+                    panelsEl.appendChild(panel);
+                    showPanelLoading(content, 'Requesting aircraft...');
+                    fetchNearestPlaneIntoPanel(selected, airportCode, content);
+                    return;
+                }
+
+                // Otherwise: show ALL views (what you asked for)
+                // Stable ordering: alphabetical by key
+                viewKeys.sort((a,b) => a.localeCompare(b)).forEach(vk => {
+                    const vcfg = viewsObj[vk];
+                    const label = vcfg.label || vk.toUpperCase();
+                    const subtitle = `${vcfg.lat}, ${vcfg.lon} • dist ${vcfg.dist}`;
+                    const { panel, content } = createPanel(`${airportCode} — ${label}`, subtitle);
+                    panelsEl.appendChild(panel);
+                    showPanelLoading(content, 'Requesting aircraft...');
+                    fetchNearestPlaneIntoPanel(vcfg, airportCode, content);
+                });
+
+                hintEl.textContent = `Showing ${viewKeys.length} departure corridors for ${airportCode}.`;
+
+            } catch (err) {
+                panelsEl.innerHTML = '';
+                const { panel, content } = createPanel('Error', '');
+                panelsEl.appendChild(panel);
+                showPanelMessage(content, err?.message || 'Failed to initialize page.', true);
+            }
+        });
+    </script>
+</body>
+</html>
