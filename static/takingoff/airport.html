@@ -51,7 +51,29 @@
         [data-theme="dark"] .footer { background-color: rgba(255, 255, 255, 0.1); }
         [data-theme="dark"] .footer a.text-body { color: var(--link-color) !important; }
 
-        #themeToggle { font-size: 12px; padding: 5px 10px; }
+        #themeSwitcher {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 1100;
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            border: 1px solid #bfc6d1;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            padding: 0;
+        }
+        #themeSwitcher:hover { transform: scale(1.04); }
+        [data-theme="dark"] #themeSwitcher {
+            border-color: #4a4f57;
+            background-color: rgba(34, 38, 44, 0.92);
+        }
 
         .panel {
             background-color: var(--chatbox-background);
@@ -103,18 +125,22 @@
             padding: 12px 0;
         }
 
-        .airport-links {
-            text-align: center;
+        .airport-links-grid {
             margin-top: 16px;
-            line-height: 1.9;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(44px, auto));
+            justify-content: center;
+            align-items: center;
+            column-gap: 14px;
+            row-gap: 8px;
+            text-align: center;
         }
-
-        .airport-links a {
-            margin: 0 8px;
+        .airport-links-grid a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
             white-space: nowrap;
-        }
-        .airport-links-row + .airport-links-row {
-            margin-top: 4px;
         }
 
         .hint-text {
@@ -162,6 +188,7 @@
 </head>
 
 <body class="d-flex flex-column min-vh-100" data-theme="light">
+    <button id="themeSwitcher" type="button" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
     <div class="container flex-fill">
         <div class="text-center my-3">
             <a href="/" class="site-logo-link"><img
@@ -171,15 +198,11 @@
 
             <p id="headline" class="h3 fw-bold site-title">What's Taking Off?</p>
 
-            <div>
-                <button id="themeToggle" class="btn btn-secondary mb-3">Toggle Dark Mode</button>
-            </div>
-
             <!-- We will render one panel per view here -->
             <div id="panels"></div>
 
             <div id="hint" class="mt-3 hint-text"></div>
-            <div id="airportLinks" class="airport-links"></div>
+            <div id="airportLinks" class="airport-links-grid"></div>
         </div>
     </div>
 
@@ -195,15 +218,35 @@
     <script>
         // ----- Theme handling -----
         const body = document.body;
-        const themeToggle = document.getElementById('themeToggle');
+        const themeSwitcher = document.getElementById('themeSwitcher');
         const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
-        body.setAttribute("data-theme", prefersDarkScheme.matches ? "dark" : "light");
+        const THEME_PREF_KEY = 'whatsoverhead-theme-pref';
+
+        function setTheme(theme) {
+            body.setAttribute("data-theme", theme);
+            const isDark = theme === "dark";
+            themeSwitcher.textContent = isDark ? '☀️' : '🌙';
+            themeSwitcher.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+            themeSwitcher.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+        }
+
+        const savedTheme = localStorage.getItem(THEME_PREF_KEY);
+        if (savedTheme === 'dark' || savedTheme === 'light') {
+            setTheme(savedTheme);
+        } else {
+            setTheme(prefersDarkScheme.matches ? "dark" : "light");
+        }
+
         prefersDarkScheme.addEventListener("change", (e) => {
-            body.setAttribute("data-theme", e.matches ? "dark" : "light");
+            const persistedTheme = localStorage.getItem(THEME_PREF_KEY);
+            if (persistedTheme === 'dark' || persistedTheme === 'light') return;
+            setTheme(e.matches ? "dark" : "light");
         });
-        themeToggle.addEventListener("click", () => {
+        themeSwitcher.addEventListener("click", () => {
             const currentTheme = body.getAttribute("data-theme");
-            body.setAttribute("data-theme", currentTheme === "light" ? "dark" : "light");
+            const nextTheme = currentTheme === "light" ? "dark" : "light";
+            localStorage.setItem(THEME_PREF_KEY, nextTheme);
+            setTheme(nextTheme);
         });
 
         const headlineEl = document.getElementById('headline');
@@ -266,31 +309,15 @@
             }).filter(Boolean);
 
             if (items.length === 0) return;
-
-            const splitAt = Math.ceil(items.length / 2);
-            const rows = [items.slice(0, splitAt), items.slice(splitAt)];
-
-            rows.forEach((rowItems) => {
-                if (rowItems.length === 0) return;
-                const row = document.createElement('div');
-                row.className = 'airport-links-row';
-
-                rowItems.forEach((item, idx) => {
-                    const a = document.createElement('a');
-                    a.href = `/static/takingoff/airport.html?code=${encodeURIComponent(item.key)}`;
-                    if (currentCode && item.key === currentCode.toLowerCase()) {
-                        a.innerHTML = `<mark class="bg-warning-subtle text-success fw-bold">${item.code}</mark>`;
-                    } else {
-                        a.textContent = item.code;
-                    }
-                    row.appendChild(a);
-
-                    if (idx < rowItems.length - 1) {
-                        row.appendChild(document.createTextNode('·'));
-                    }
-                });
-
-                airportLinksEl.appendChild(row);
+            items.forEach((item) => {
+                const a = document.createElement('a');
+                a.href = `/static/takingoff/airport.html?code=${encodeURIComponent(item.key)}`;
+                if (currentCode && item.key === currentCode.toLowerCase()) {
+                    a.innerHTML = `<mark class="bg-warning-subtle text-success fw-bold">${item.code}</mark>`;
+                } else {
+                    a.textContent = item.code;
+                }
+                airportLinksEl.appendChild(a);
             });
         }
 
