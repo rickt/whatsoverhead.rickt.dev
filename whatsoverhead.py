@@ -84,6 +84,14 @@ app.add_middleware(
     trusted_hosts="*"
 )
 
+
+@app.middleware("http")
+async def add_no_store_for_poll(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path in ("/poll", "/poll/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
 # static dir
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
