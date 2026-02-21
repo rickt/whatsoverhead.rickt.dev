@@ -30,10 +30,18 @@ jobs:
         working-directory: .
         run: |
           if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
-            cat .env-dev >> $GITHUB_ENV
+            ENV_FILE=".env-dev"
           else
-            cat .env >> $GITHUB_ENV
+            ENV_FILE=".env"
           fi
+
+          # GitHub env file parser does not accept comment lines.
+          # Keep .env comments, but only export non-empty, non-comment entries.
+          while IFS= read -r line; do
+            [[ "$line" =~ ^[[:space:]]*$ ]] && continue
+            [[ "$line" =~ ^[[:space:]]*# ]] && continue
+            echo "$line" >> "$GITHUB_ENV"
+          done < "$ENV_FILE"
 
       # Step 3: auth with GCP
       - name: Authenticate with GCP
@@ -76,6 +84,7 @@ jobs:
             --cpu ${{ env.CLOUDRUN_CPU }} \
             --memory ${{ env.CLOUDRUN_MEMORY }}Gi \
             --max-instances ${{ env.CLOUDRUN_MAXINSTANCES }} \
+            --min-instances ${{ env.CLOUDRUN_MININSTANCES }} \
             --concurrency ${{ env.CLOUDRUN_CONCURRENCY }} \
             --service-account ${{ env.GCP_SERVICE_ACCOUNT }} \
             --platform managed \
