@@ -1,0 +1,106 @@
+{
+  "lax": {
+    "code": "LAX",
+    "title": "What's Taking Off at LAX?",
+    "views": {
+      "departures": {
+        "label": "Departures (West Flow \u2022 RWY 25L/25R)",
+        "lat": 33.938152,
+        "lon": -118.38688,
+        "dist": 3.5,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "jfk": {
+    "code": "JFK",
+    "title": "What's Taking Off at JFK?",
+    "views": {
+      "departures": {
+        "label": "Departures (NW Flow \u2022 RWY 31L/31R)",
+        "lat": 40.638115,
+        "lon": -73.770529,
+        "dist": 3.5,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "lga": {
+    "code": "LGA",
+    "title": "What's Taking Off at LaGuardia (LGA)?",
+    "views": {
+      "departures": {
+        "label": "Departures (NW Flow \u2022 RWY 31)",
+        "lat": 40.774481,
+        "lon": -73.862137,
+        "dist": 3.5,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "lhr": {
+    "code": "LHR",
+    "title": "What's Taking Off at Heathrow (LHR)?",
+    "views": {
+      "departures": {
+        "label": "Departures (West Flow \u2022 RWY 27L/27R)",
+        "lat": 51.471334,
+        "lon": -0.440888,
+        "dist": 3.5,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "lgw": {
+    "code": "LGW",
+    "title": "What's Taking Off at Gatwick (LGW)?",
+    "views": {
+      "departures": {
+        "label": "Departures (West Flow \u2022 RWY 26)",
+        "lat": 51.150724,
+        "lon": -0.178405,
+        "dist": 3.5,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "cdg": {
+    "code": "CDG",
+    "title": "What's Taking Off at Paris CDG (CDG)?",
+    "views": {
+      "departures": {
+        "label": "Departures (West Flow \u2022 RWY 26/27 Complex)",
+        "lat": 49.01066,
+        "lon": 2.579315,
+        "dist": 3.5,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "hnd": {
+    "code": "HND",
+    "title": "What's Taking Off at Haneda (HND)?",
+    "views": {
+      "departures": {
+        "label": "Departures (Primary \u2022 RWY 23)",
+        "lat": 35.537311,
+        "lon": 139.818237,
+        "dist": 3.5,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "nrt": {
+    "code": "NRT",
+    "title": "What's Taking Off at Narita (NRT)?",
+    "views": {
+      "departures": {
+        "label": "Departures (Primary \u2022 RWY 34L/34R)",
+        "lat": 35.768445,
+        "lon": 140.388731,
+        "dist": 3.5,
+        "mapZoom": 12.5
+      }
+    }
+  }
+}
