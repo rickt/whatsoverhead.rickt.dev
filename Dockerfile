@@ -24,6 +24,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # env & app code
 COPY .env /app/
 COPY whatsoverhead.py /app/
+COPY config/ /app/config/
 COPY templates/ /app/templates/
 COPY static /app/static/
 
@@ -31,4 +32,3 @@ COPY static /app/static/
 CMD ["uvicorn", "whatsoverhead:app", "--host", "0.0.0.0", "--port", "8080", "--proxy-headers"]
 
 # EOF
-

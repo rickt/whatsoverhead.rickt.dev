@@ -2,6 +2,6 @@
 
 . ./.env
 
-docker build -t gcr.io/${GCP_PROJECT_ID}/${ENDPOINT} .
+docker build --platform=linux/amd64 -t gcr.io/${GCP_PROJECT_ID}/${ENDPOINT} .
 
 # EOF

@@ -1,0 +1,235 @@
+{
+  "lax": {
+    "code": "LAX",
+    "title": "What's Taking Off at LAX?",
+    "fetch": {
+      "dist_km": 15
+    },
+    "views": {
+      "west_primary": {
+        "label": "Departures (West Flow • RWY 25L/25R)",
+        "lat": 33.938152,
+        "lon": -118.38688,
+        "dist": 3.5,
+        "expected_track": 250,
+        "track_tolerance": 35,
+        "mapZoom": 12.5,
+        "primary": true
+      },
+      "east_alt": {
+        "label": "Departures (East Flow • RWY 07L/07R)",
+        "lat": 33.935347,
+        "lon": -118.413619,
+        "dist": 3.5,
+        "expected_track": 70,
+        "track_tolerance": 35,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "jfk": {
+    "code": "JFK",
+    "title": "What's Taking Off at JFK?",
+    "fetch": {
+      "dist_km": 15
+    },
+    "views": {
+      "nw_primary": {
+        "label": "Departures (NW Flow • RWY 31L/31R)",
+        "lat": 40.638115,
+        "lon": -73.770529,
+        "dist": 3.5,
+        "expected_track": 310,
+        "track_tolerance": 35,
+        "mapZoom": 12.5,
+        "primary": true
+      },
+      "sw_alt": {
+        "label": "Departures (SW Flow • RWY 22L/22R)",
+        "lat": 40.643137,
+        "lon": -73.762834,
+        "dist": 3.5,
+        "expected_track": 220,
+        "track_tolerance": 35,
+        "mapZoom": 12.5
+      },
+      "se_alt": {
+        "label": "Departures (SE Flow • RWY 13L/13R)",
+        "lat": 40.650783,
+        "lon": -73.798371,
+        "dist": 3.5,
+        "expected_track": 130,
+        "track_tolerance": 35,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "lga": {
+    "code": "LGA",
+    "title": "What's Taking Off at LaGuardia (LGA)?",
+    "fetch": {
+      "dist_km": 15
+    },
+    "views": {
+      "nw_primary": {
+        "label": "Departures (NW Flow • RWY 31)",
+        "lat": 40.774481,
+        "lon": -73.862137,
+        "dist": 3.5,
+        "expected_track": 310,
+        "track_tolerance": 35,
+        "mapZoom": 12.5,
+        "primary": true
+      },
+      "sw_alt": {
+        "label": "Departures (SW Flow • RWY 22)",
+        "lat": 40.781587,
+        "lon": -73.873844,
+        "dist": 3.5,
+        "expected_track": 220,
+        "track_tolerance": 35,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "lhr": {
+    "code": "LHR",
+    "title": "What's Taking Off at Heathrow (LHR)?",
+    "fetch": {
+      "dist_km": 15
+    },
+    "views": {
+      "west_primary": {
+        "label": "Departures (West Flow • RWY 27L/27R)",
+        "lat": 51.471334,
+        "lon": -0.440888,
+        "dist": 3.5,
+        "expected_track": 270,
+        "track_tolerance": 35,
+        "mapZoom": 12.5,
+        "primary": true
+      },
+      "east_alt": {
+        "label": "Departures (East Flow • RWY 09L/09R)",
+        "lat": 51.471216,
+        "lon": -0.480881,
+        "dist": 3.5,
+        "expected_track": 90,
+        "track_tolerance": 35,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "lgw": {
+    "code": "LGW",
+    "title": "What's Taking Off at Gatwick (LGW)?",
+    "fetch": {
+      "dist_km": 15
+    },
+    "views": {
+      "west_primary": {
+        "label": "Departures (West Flow • RWY 26L/26R)",
+        "lat": 51.150724,
+        "lon": -0.178405,
+        "dist": 3.5,
+        "expected_track": 260,
+        "track_tolerance": 35,
+        "mapZoom": 12.5,
+        "primary": true
+      },
+      "east_alt": {
+        "label": "Departures (East Flow • RWY 08L/08R)",
+        "lat": 51.146933,
+        "lon": -0.205461,
+        "dist": 3.5,
+        "expected_track": 80,
+        "track_tolerance": 35,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "cdg": {
+    "code": "CDG",
+    "title": "What's Taking Off at Paris CDG (CDG)?",
+    "fetch": {
+      "dist_km": 15
+    },
+    "views": {
+      "west_primary": {
+        "label": "Departures (West Flow • RWY 26/27 Complex)",
+        "lat": 49.01066,
+        "lon": 2.579315,
+        "dist": 3.5,
+        "expected_track": 265,
+        "track_tolerance": 35,
+        "mapZoom": 12.5,
+        "primary": true
+      },
+      "east_alt": {
+        "label": "Departures (East Flow • RWY 08/09 Complex)",
+        "lat": 49.00884,
+        "lon": 2.54592,
+        "dist": 3.5,
+        "expected_track": 85,
+        "track_tolerance": 35,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "hnd": {
+    "code": "HND",
+    "title": "What's Taking Off at Haneda (HND)?",
+    "fetch": {
+      "dist_km": 15
+    },
+    "views": {
+      "rwy23_primary": {
+        "label": "Departures (Primary • RWY 23)",
+        "lat": 35.537311,
+        "lon": 139.818237,
+        "dist": 3.5,
+        "expected_track": 230,
+        "track_tolerance": 35,
+        "mapZoom": 12.5,
+        "primary": true
+      },
+      "rwy34_alt": {
+        "label": "Departures (Alt • RWY 34L/34R)",
+        "lat": 35.543443,
+        "lon": 139.791731,
+        "dist": 3.5,
+        "expected_track": 340,
+        "track_tolerance": 35,
+        "mapZoom": 12.5
+      }
+    }
+  },
+  "nrt": {
+    "code": "NRT",
+    "title": "What's Taking Off at Narita (NRT)?",
+    "fetch": {
+      "dist_km": 15
+    },
+    "views": {
+      "rwy34_primary": {
+        "label": "Departures (Primary • RWY 34L/34R)",
+        "lat": 35.768445,
+        "lon": 140.388731,
+        "dist": 3.5,
+        "expected_track": 340,
+        "track_tolerance": 35,
+        "mapZoom": 12.5,
+        "primary": true
+      },
+      "rwy16_alt": {
+        "label": "Departures (Alt • RWY 16L/16R)",
+        "lat": 35.784655,
+        "lon": 140.376772,
+        "dist": 3.5,
+        "expected_track": 160,
+        "track_tolerance": 35,
+        "mapZoom": 12.5
+      }
+    }
+  }
+}
