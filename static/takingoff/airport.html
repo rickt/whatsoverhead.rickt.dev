@@ -88,6 +88,7 @@
 
         .error { color: red; }
         .success { color: green; }
+        [data-theme="dark"] .success { color: #8FD19E; }
 
         .link-centered {
             text-align: center;
@@ -101,6 +102,60 @@
             align-items: center;
             padding: 12px 0;
         }
+
+        .airport-links {
+            text-align: center;
+            margin-top: 16px;
+            line-height: 1.9;
+        }
+
+        .airport-links a {
+            margin: 0 8px;
+            white-space: nowrap;
+        }
+        .airport-links-row + .airport-links-row {
+            margin-top: 4px;
+        }
+
+        .hint-text {
+            opacity: 0.85;
+        }
+
+        .hint-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            opacity: 0.85;
+        }
+
+        mark.bg-warning-subtle.text-success.fw-bold {
+            border-radius: 0.35rem;
+            padding: 0.1rem 0.45rem;
+        }
+
+        [data-theme="dark"] mark.bg-warning-subtle.text-success.fw-bold {
+            background-color: rgba(173, 132, 39, 0.28) !important;
+            color: #b8d7a8 !important;
+        }
+
+        .site-logo-link {
+            display: inline-block;
+            line-height: 0;
+            margin-bottom: 20px;
+        }
+
+        .site-logo-img {
+            display: block;
+            max-height: 64px;
+            max-width: 64px;
+        }
+
+        .site-title {
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
     </style>
 
     <link rel="icon" href="/plane.ico" type="image/x-icon">
@@ -109,13 +164,12 @@
 <body class="d-flex flex-column min-vh-100" data-theme="light">
     <div class="container flex-fill">
         <div class="text-center my-3">
-            <a href="/"><img
+            <a href="/" class="site-logo-link"><img
                 src="https://whatsoverhead.rickt.dev/static/takingoff.png"
-                class="img-fluid"
-                alt="What's Taking Off?"
-                style="max-height: 64px; max-width: 64px;"></a>
+                class="img-fluid site-logo-img"
+                alt="What's Taking Off?"></a>
 
-            <p id="headline" class="h3 fw-bold">What's Taking Off?</p>
+            <p id="headline" class="h3 fw-bold site-title">What's Taking Off?</p>
 
             <div>
                 <button id="themeToggle" class="btn btn-secondary mb-3">Toggle Dark Mode</button>
@@ -124,7 +178,8 @@
             <!-- We will render one panel per view here -->
             <div id="panels"></div>
 
-            <div id="hint" class="mt-3" style="opacity:0.85;"></div>
+            <div id="hint" class="mt-3 hint-text"></div>
+            <div id="airportLinks" class="airport-links"></div>
         </div>
     </div>
 
@@ -154,6 +209,8 @@
         const headlineEl = document.getElementById('headline');
         const panelsEl = document.getElementById('panels');
         const hintEl = document.getElementById('hint');
+        const airportLinksEl = document.getElementById('airportLinks');
+        const API_BASE = 'https://api.whatsoverhead.rickt.dev';
 
         function getRoute() {
             const params = new URLSearchParams(window.location.search);
@@ -170,10 +227,115 @@
             return { code: code.toLowerCase(), view: view.toLowerCase() };
         }
 
-        async function loadAirports() {
-            const resp = await fetch('/airports.json', { cache: 'no-cache' });
-            if (!resp.ok) throw new Error('Failed to load airports.json');
+        async function loadCachedAirport(code) {
+            const url = `${API_BASE}/cached?code=${encodeURIComponent(code)}`;
+            const resp = await fetch(url, { cache: 'no-store' });
+
+            if (resp.status === 404) {
+                const e = new Error('Cache warming up, try again in a minute.');
+                e.status = 404;
+                throw e;
+            }
+
+            if (!resp.ok) {
+                let text = '';
+                try {
+                    text = await resp.text();
+                } catch (_) {}
+                throw new Error(text || `Failed to load cached data (${resp.status}).`);
+            }
+
             return await resp.json();
+        }
+
+        async function loadSupportedAirports() {
+            const resp = await fetch(`${API_BASE}/airports`, { cache: 'no-store' });
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            return Array.isArray(data?.airports) ? data.airports : [];
+        }
+
+        function renderAirportLinks(airports, currentCode) {
+            airportLinksEl.innerHTML = '';
+            if (!Array.isArray(airports) || airports.length === 0) return;
+
+            const items = airports.map((airport) => {
+                const key = String(airport?.key || '').toLowerCase();
+                const code = String(airport?.code || key).toUpperCase();
+                return key ? { key, code } : null;
+            }).filter(Boolean);
+
+            if (items.length === 0) return;
+
+            const splitAt = Math.ceil(items.length / 2);
+            const rows = [items.slice(0, splitAt), items.slice(splitAt)];
+
+            rows.forEach((rowItems) => {
+                if (rowItems.length === 0) return;
+                const row = document.createElement('div');
+                row.className = 'airport-links-row';
+
+                rowItems.forEach((item, idx) => {
+                    const a = document.createElement('a');
+                    a.href = `/static/takingoff/airport.html?code=${encodeURIComponent(item.key)}`;
+                    if (currentCode && item.key === currentCode.toLowerCase()) {
+                        a.innerHTML = `<mark class="bg-warning-subtle text-success fw-bold">${item.code}</mark>`;
+                    } else {
+                        a.textContent = item.code;
+                    }
+                    row.appendChild(a);
+
+                    if (idx < rowItems.length - 1) {
+                        row.appendChild(document.createTextNode('·'));
+                    }
+                });
+
+                airportLinksEl.appendChild(row);
+            });
+        }
+
+        function formatAge(seconds) {
+            if (!Number.isFinite(seconds) || seconds < 0) return 'unknown';
+            if (seconds < 60) return `${seconds}s ago`;
+            const mins = Math.floor(seconds / 60);
+            if (mins < 60) return `${mins}m ago`;
+            const hours = Math.floor(mins / 60);
+            const remMins = mins % 60;
+            return remMins ? `${hours}h ${remMins}m ago` : `${hours}h ago`;
+        }
+
+        function setHintText(text) {
+            hintEl.className = 'mt-3 hint-text';
+            hintEl.textContent = text || '';
+        }
+
+        function setHintSummary(viewCount, airportCode, lastUpdatedText) {
+            hintEl.className = 'mt-3 hint-row';
+            hintEl.innerHTML = '';
+
+            const summary = document.createElement('span');
+            summary.textContent = `Showing ${viewCount} cached view${viewCount === 1 ? '' : 's'} for `;
+
+            const airportMark = document.createElement('mark');
+            airportMark.className = 'bg-warning-subtle text-success fw-bold';
+            airportMark.textContent = airportCode;
+            summary.appendChild(airportMark);
+            summary.appendChild(document.createTextNode('.'));
+
+            const updated = document.createElement('span');
+            updated.textContent = lastUpdatedText;
+
+            const seeOverhead = document.createElement('span');
+            seeOverhead.appendChild(document.createTextNode('See '));
+            const link = document.createElement('a');
+            link.href = '/';
+            link.textContent = "What's Overhead";
+            seeOverhead.appendChild(link);
+            seeOverhead.appendChild(document.createTextNode('.'));
+
+            hintEl.appendChild(summary);
+            hintEl.appendChild(updated);
+            hintEl.appendChild(seeOverhead);
         }
 
         function setTitleAndHeader(titleText) {
@@ -224,6 +386,7 @@
             contentEl.innerHTML = '';
             const p = document.createElement('p');
             p.textContent = message;
+            p.style.whiteSpace = 'pre-line';
             p.className = isError ? 'error' : 'success';
             contentEl.appendChild(p);
         }
@@ -241,115 +404,117 @@
             contentEl.appendChild(link);
         }
 
-        function fetchNearestPlaneIntoPanel(viewCfg, airportCode, contentEl) {
-            const lat = viewCfg.lat;
-            const lon = viewCfg.lon;
-            const dist = viewCfg.dist;
-
-            const maxAlt = (typeof viewCfg.max_alt === 'number') ? viewCfg.max_alt : 8500;
-            const movement = viewCfg.movement || "receding";
-            const mapZoom = (typeof viewCfg.mapZoom === 'number') ? viewCfg.mapZoom : 12.5;
-
-            const params = new URLSearchParams({
-                lat, lon, dist,
-                max_alt: maxAlt,
-                movement: movement,
-                format: "text"
-            });
-
-            const url = `https://api.whatsoverhead.rickt.dev/nearest_plane?${params.toString()}`;
-
-            fetch(url)
-                .then(r => {
-                    if (!r.ok) {
-                        return r.text().then(t => { throw new Error(t || 'unknown error occurred.'); });
-                    }
-                    return r.text();
-                })
-                .then(data => {
-                    if (data) {
-                        showPanelMessage(contentEl, data, false);
-                        addMapLink(contentEl, lat, lon, mapZoom, airportCode, viewCfg.label || '');
-                    } else {
-                        showPanelMessage(contentEl, 'No data received from the api.', true);
-                    }
-                })
-                .catch(err => {
-                    showPanelMessage(contentEl, err?.message || 'An unknown error occurred.', true);
-                });
-        }
-
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 panelsEl.innerHTML = '';
-
-                const airports = await loadAirports();
                 const { code, view } = getRoute();
+                const supportedAirports = await loadSupportedAirports();
+                renderAirportLinks(supportedAirports, code);
+                const airportsByKey = {};
+                supportedAirports.forEach(a => {
+                    const key = String(a?.key || '').toLowerCase();
+                    if (key) airportsByKey[key] = a;
+                });
 
                 if (!code) {
                     setTitleAndHeader("What's Taking Off?");
-                    hintEl.textContent = 'Try: /airport.html?code=lax or /airport.html?code=jfk';
+                    setHintText('Try: /airport.html?code=lax or /airport.html?code=jfk');
                     return;
                 }
 
-                const airport = airports[code];
-                if (!airport) {
+                if (supportedAirports.length > 0 && !airportsByKey[code]) {
+                    const guessedCode = code.toUpperCase();
                     setTitleAndHeader("What's Taking Off?");
-                    hintEl.textContent = `Unknown airport "${code}".`;
+                    const { panel, content } = createPanel('Unknown Airport', '');
+                    panelsEl.appendChild(panel);
+                    showPanelMessage(content, `Unsupported airport code "${guessedCode}".`, true);
+                    const supportedCodes = supportedAirports.map(a => String(a?.code || '').toUpperCase()).filter(Boolean);
+                    setHintText(supportedCodes.length
+                        ? `Supported airports: ${supportedCodes.join(', ')}`
+                        : 'Try a supported airport code.');
                     return;
                 }
 
-                const airportCode = airport.code || code.toUpperCase();
-                const titleText = airport.title || `What's Taking Off at ${airportCode}?`;
+                const guessedCode = code.toUpperCase();
+                setTitleAndHeader(`What's Taking Off at ${guessedCode}?`);
+                const loadingPanel = createPanel(`${guessedCode} — Loading`, '');
+                panelsEl.appendChild(loadingPanel.panel);
+                showPanelLoading(loadingPanel.content, 'Loading cached departures...');
+
+                const cached = await loadCachedAirport(code);
+                const airportCode = (cached.code || guessedCode).toUpperCase();
+                const titleText = cached.title || `What's Taking Off at ${airportCode}?`;
                 setTitleAndHeader(titleText);
 
-                const viewsObj = airport.views || {};
-                const viewKeys = Object.keys(viewsObj);
-
-                if (viewKeys.length === 0) {
+                const allResults = Array.isArray(cached.results) ? cached.results : [];
+                if (allResults.length === 0) {
+                    panelsEl.innerHTML = '';
                     const { panel, content } = createPanel(airportCode, '');
                     panelsEl.appendChild(panel);
-                    showPanelMessage(content, 'No views configured for this airport in airports.json.', true);
+                    showPanelMessage(content, 'No cached views found for this airport yet.', true);
+                    setHintText('Cache warming up, try again in a minute.');
                     return;
                 }
 
-                // If a specific view was requested, show only that one.
+                const resultsByView = {};
+                allResults.forEach(r => {
+                    const key = String(r?.view || '').toLowerCase();
+                    if (key && !resultsByView[key]) resultsByView[key] = r;
+                });
+
+                let selectedResults = allResults.slice();
                 if (view) {
-                    const selected = viewsObj[view];
-                    if (!selected) {
+                    const picked = resultsByView[view];
+                    if (!picked) {
+                        panelsEl.innerHTML = '';
                         const { panel, content } = createPanel(airportCode, '');
                         panelsEl.appendChild(panel);
                         showPanelMessage(content, `Unknown view "${view}" for ${airportCode}.`, true);
-                        hintEl.textContent = `Available views: ${viewKeys.join(', ')}`;
+                        const available = Object.keys(resultsByView).sort((a, b) => a.localeCompare(b));
+                        setHintText(available.length ? `Available views: ${available.join(', ')}` : '');
                         return;
                     }
-
-                    const label = selected.label || view.toUpperCase();
-                    const { panel, content } = createPanel(`${airportCode} — ${label}`, '');
-                    panelsEl.appendChild(panel);
-                    showPanelLoading(content, 'Requesting aircraft...');
-                    fetchNearestPlaneIntoPanel(selected, airportCode, content);
-                    return;
+                    selectedResults = [picked];
+                } else {
+                    selectedResults.sort((a, b) => {
+                        const av = String(a?.view || '');
+                        const bv = String(b?.view || '');
+                        return av.localeCompare(bv);
+                    });
                 }
 
-                // Otherwise: show ALL views (what you asked for)
-                // Stable ordering: alphabetical by key
-                viewKeys.sort((a,b) => a.localeCompare(b)).forEach(vk => {
-                    const vcfg = viewsObj[vk];
-                    const label = vcfg.label || vk.toUpperCase();
-                    const subtitle = `${vcfg.lat}, ${vcfg.lon} • dist ${vcfg.dist}`;
+                panelsEl.innerHTML = '';
+                selectedResults.forEach(result => {
+                    const viewName = String(result?.view || '').toLowerCase();
+                    const label = result?.label || (viewName ? viewName.toUpperCase() : 'Departures');
+                    const lat = Number(result?.lat);
+                    const lon = Number(result?.lon);
+                    const mapZoom = Number.isFinite(Number(result?.mapZoom)) ? Number(result.mapZoom) : 12.5;
+                    const subtitle = (Number.isFinite(lat) && Number.isFinite(lon)) ? `${lat}, ${lon}` : '';
                     const { panel, content } = createPanel(`${airportCode} — ${label}`, subtitle);
                     panelsEl.appendChild(panel);
-                    showPanelLoading(content, 'Requesting aircraft...');
-                    fetchNearestPlaneIntoPanel(vcfg, airportCode, content);
+
+                    const message = (result?.message || '').trim();
+                    showPanelMessage(content, message || 'No cached message for this view yet.', !message);
+                    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+                        addMapLink(content, lat, lon, mapZoom, airportCode, label);
+                    }
                 });
 
-                hintEl.textContent = `Showing ${viewKeys.length} departure corridors for ${airportCode}.`;
+                const updatedAtSec = Number(cached.updatedAt);
+                const ageSeconds = Number.isFinite(updatedAtSec) ? Math.max(0, Math.floor(Date.now() / 1000) - updatedAtSec) : NaN;
+                const lastUpdatedText = Number.isFinite(updatedAtSec) ? `Last updated ${formatAge(ageSeconds)}.` : 'Last updated unknown.';
+                setHintSummary(selectedResults.length, airportCode, lastUpdatedText);
 
             } catch (err) {
                 panelsEl.innerHTML = '';
                 const { panel, content } = createPanel('Error', '');
                 panelsEl.appendChild(panel);
+                if (err?.status === 404) {
+                    showPanelMessage(content, 'Cache warming up, try again in a minute.', true);
+                    setHintText('No cached data yet. The scheduler will populate this shortly.');
+                    return;
+                }
                 showPanelMessage(content, err?.message || 'Failed to initialize page.', true);
             }
         });
